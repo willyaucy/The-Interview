@@ -1,3 +1,5 @@
+package srm680;
+
 import org.junit.Test;
 
 import java.util.Arrays;
