@@ -12,28 +12,21 @@ import static org.junit.Assert.assertEquals;
  */
 public class DistinguishableSetDiv2 {
   public static int count(String[] answers) {
-    return (int)Math.pow(2, answers[0].length()) - countIndistinguishable(Arrays.asList(answers));
-  }
+    if (answers.length == 0 || answers[0].length() == 0) {
+      return 0;
+    }
 
-  private static int countIndistinguishable(List<String> answers) {
-    int number = 0;
+    final int numberOfQuestions = answers[0].length();
+    int counter[][] = new int[numberOfQuestions][numberOfQuestions];
 
-    if (!answers.isEmpty()) {
-      for (int i = 0; i < answers.get(0).length(); i++) {
-        if (areAnswersEqual(answers, i)) {
-          number += 1 + number;
+    for (int i = 0; i < numberOfQuestions; i++) {
+      for (int k = 0; k <= i; k++) {
+        if (i == k) {
+          
+          counter[i][k] = Arrays.stream(answers).map(answer -> answer.charAt(i)).distinct();
         }
       }
     }
-
-    return number + 1;
-  }
-
-  private static boolean areAnswersEqual(List<String> answers, int index) {
-    return answers.stream()
-        .map(answer -> answer.charAt(index))
-        .distinct()
-        .count() == 1;
   }
 
   public static class DistinguishableSetDiv2Test {
