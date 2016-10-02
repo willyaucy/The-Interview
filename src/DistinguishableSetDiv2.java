@@ -22,11 +22,12 @@ public class DistinguishableSetDiv2 {
     for (int i = 0; i < numberOfQuestions; i++) {
       for (int k = 0; k <= i; k++) {
         if (i == k) {
-          
-          counter[i][k] = Arrays.stream(answers).map(answer -> answer.charAt(i)).distinct();
+
+//          counter[i][k] = Arrays.stream(answers).map(answer -> answer.charAt(i)).distinct();
         }
       }
     }
+    return 0;
   }
 
   public static class DistinguishableSetDiv2Test {
