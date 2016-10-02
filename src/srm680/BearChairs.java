@@ -2,7 +2,9 @@ package srm680;
 
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.PriorityQueue;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -15,16 +17,34 @@ import static org.junit.Assert.assertEquals;
  */
 public class BearChairs {
   public static int[] findPositions(int[] atLeast, int d) {
+    if (atLeast.length == 0) {
+      return new int[0];
+    }
+
     final int[] positions = new int[atLeast.length];
-    final PriorityQueue<Integer> sortedBears = new PriorityQueue<>();
-    int leftmostAvailable = 1;
+    final List<Integer> sortedBears = new ArrayList<>();
 
-    for (int i = 0; i < atLeast.length; i++) {
-      positions[i] = Math.max(leftmostAvailable, atLeast[i]);
-      sortedBears.add(positions[i]);
+    positions[0] = atLeast[0];
+    sortedBears.add(atLeast[0]);
 
-      while (!sortedBears.isEmpty() && sortedBears.peek() - leftmostAvailable < d) {
-        leftmostAvailable = sortedBears.remove() + d;
+    for (int i = 1; i < atLeast.length; i++) {
+      for (int k = 0; k < sortedBears.size(); k++) {
+//        if (k == sortedBears.size() - 1 || )
+
+
+        if (sortedBears.get(k) - d >= atLeast[i]) {
+          if (k == 0) {
+            final int position = atLeast[i];
+            positions[i] = position;
+            sortedBears.add(0, position);
+            break;
+          } else if (sortedBears.get(k) - d - d > sortedBears.get(k - 1)) {
+            final int position = Math.max(sortedBears.get(k - 1) + d, atLeast[i]);
+            positions[i] = position;
+            sortedBears.add(k, position);
+            break;
+          }
+        }
       }
     }
 

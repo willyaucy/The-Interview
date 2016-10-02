@@ -11,23 +11,93 @@ import static org.junit.Assert.assertEquals;
  * Started: 3:18pm
  */
 public class DistinguishableSetDiv2 {
-  public static int count(String[] answers) {
-    if (answers.length == 0 || answers[0].length() == 0) {
+  public static int count2(String[] answers) {
+    if (answers.length == 0) {
       return 0;
     }
 
     final int numberOfQuestions = answers[0].length();
+
+    if (numberOfQuestions == 0) {
+      return 0;
+    }
+
+    if (Arrays.stream(answers).distinct().count() != answers.length) {
+      return 0;
+    }
+
+    String[] answersWithoutFirst = Arrays
+        .stream(answers)
+        .map(answer -> answer.substring(0, numberOfQuestions - 1))
+        .toArray(String[]::new);
+
+    String[] answersWithoutLast = Arrays
+        .stream(answers)
+        .map(answer -> answer.substring(1))
+        .toArray(String[]::new);
+
+    String[] answersWithoutFirstLast = Arrays
+        .stream(answers)
+        .map(answer -> answer.substring(1, Math.max(1, numberOfQuestions - 1)))
+        .toArray(String[]::new);
+
+    return 1 + count(answersWithoutFirst) + count(answersWithoutLast) - count(answersWithoutFirstLast);
+  }
+
+  public static int count(String[] answers) {
+    if (answers.length == 0) {
+      return 0;
+    }
+
+    final int numberOfQuestions = answers[0].length();
+
+    if (numberOfQuestions == 0) {
+      return 0;
+    }
+
     int counter[][] = new int[numberOfQuestions][numberOfQuestions];
 
-    for (int i = 0; i < numberOfQuestions; i++) {
-      for (int k = 0; k <= i; k++) {
-        if (i == k) {
+    for (int problemSize = 1; problemSize <= numberOfQuestions; problemSize++) {
+      for (int i = 0; i <= numberOfQuestions - problemSize; i++) {
+        final int rangeFrom = i;
+        final int rangeTo = i + problemSize - 1;
 
-//          counter[i][k] = Arrays.stream(answers).map(answer -> answer.charAt(i)).distinct();
+        boolean isRangeDistinguishable = Arrays.stream(answers)
+            .map(answer -> answer.substring(rangeFrom, rangeTo + 1))
+            .distinct()
+            .count() == answers.length;
+
+        counter[rangeFrom][rangeTo] = isRangeDistinguishable ? 1 : 0;
+
+        switch (problemSize) {
+          case 1:
+            break;
+          case 2:
+            counter[rangeFrom][rangeTo] += counter[rangeFrom][rangeFrom] + counter[rangeTo][rangeTo];
+            break;
+          default:
+            counter[rangeFrom][rangeTo] +=
+                counter[rangeFrom + 1][rangeTo] +
+                counter[rangeFrom][rangeTo - 1] -
+                counter[rangeFrom + 1][rangeTo - 1];
+            break;
         }
       }
     }
-    return 0;
+
+    printMatrix(counter);
+
+    return counter[0][numberOfQuestions - 1];
+  }
+
+  public static void printMatrix(int[][] matrix) {
+
+    for (int[] row : matrix) {
+      for (int cell : row) {
+        System.out.printf("%3d  ", cell);
+      }
+      System.out.println();
+    }
   }
 
   public static class DistinguishableSetDiv2Test {
