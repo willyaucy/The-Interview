@@ -12,6 +12,12 @@ import org.junit.Test;
  * Concretely, after we processed a DataPoint from a url,
  * we do not want to process any subseqent DataPoints with the same url
  * until a timeout period is passed.
+ *
+ * eg:
+ * timeout - 2
+ * time     -  | 0 | 1 | 2 | 3 | 4 | 5 |
+ * url      -  | a | a | b | a | b | b |
+ * process? -  | y | n | y | y | n | y |
  */
 public class DebouncedProcessor implements Processor {
   private final Processor processor;
