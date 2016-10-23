@@ -101,5 +101,20 @@ public class DecompressString {
     public void test2() {
       assertEquals("abceeeeeeee", decompress("abc4[2[e]]"));
     }
+
+    @Test
+    public void test3() {
+      assertEquals("", decompress(""));
+    }
+
+    @Test
+    public void test4() {
+      assertEquals("", decompress("9000[0[abc]]"));
+    }
+
+    @Test
+    public void test5() {
+      assertEquals("abcabcabc", decompress("abcabcabc"));
+    }
   }
 }
