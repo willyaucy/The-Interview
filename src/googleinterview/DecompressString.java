@@ -21,7 +21,6 @@ public class DecompressString {
   public static String decompress(String s) {
     StringBuilder output = new StringBuilder();
     int multiplier = -1;
-
     int i = 0;
 
     while (i < s.length()) {
