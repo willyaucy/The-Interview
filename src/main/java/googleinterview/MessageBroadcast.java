@@ -1,4 +1,4 @@
-package googleinterview;
+package main.java.googleinterview;
 
 import org.junit.Test;
 

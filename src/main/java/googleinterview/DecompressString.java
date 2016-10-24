@@ -1,4 +1,4 @@
-package googleinterview;
+package main.java.googleinterview;
 
 import org.junit.Test;
 
@@ -115,6 +115,11 @@ public class DecompressString {
     @Test
     public void test5() {
       assertEquals("abcabcabc", decompress("abcabcabc"));
+    }
+
+    @Test
+    public void test6() {
+      assertEquals("abc", decompress("abc5[]"));
     }
   }
 }
