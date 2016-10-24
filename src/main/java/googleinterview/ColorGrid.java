@@ -2,6 +2,9 @@ package googleinterview;
 
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -11,10 +14,78 @@ import static org.junit.Assert.assertEquals;
  * image. The value of each cell ranges from 0 to 255.
  *
  * The shape at point x,y is defined as the set of all cells connected to x,y with the same color.
+ *
+ * Started: Oct 23 6:20PM
+ * Finished: Oct 23 6:51PM (not verified)
  */
 public class ColorGrid {
   public static int findPerimeter(int x, int y, int[][] image) {
-    return -1;
+    if (image == null || image.length == 0 ||
+        x < 0 || x >= image.length ||
+        y < 0 || y > image[0].length) {
+
+      throw new IllegalArgumentException();
+    }
+
+    int perimeter = 0;
+    boolean[][] visited = new boolean[image.length][image[0].length];
+    Point[] pointsToVisit = new Point[] { new Point(x, y) };
+
+    while (pointsToVisit.length > 0) {
+      for (Point point : pointsToVisit) {
+        visited[point.x][point.y] = true;
+
+        if (point.x + 1 >= image.length || image[point.x][point.y] != image[point.x + 1][point.y]) {
+          perimeter++;
+        }
+
+        if (point.x - 1 < 0 || image[point.x][point.y] != image[point.x - 1][point.y]) {
+          perimeter++;
+        }
+
+        if (point.y + 1 >= image[0].length || image[point.x][point.y] != image[point.x][point.y + 1]) {
+          perimeter++;
+        }
+
+        if (point.y - 1 < 0 || image[point.x][point.y] != image[point.x][point.y - 1]) {
+          perimeter++;
+        }
+      }
+
+      pointsToVisit = findPointsToExpand(pointsToVisit, image, visited);
+    }
+
+    return perimeter;
+  }
+
+  private static Point[] findPointsToExpand(Point[] currentNodes, int[][] image, boolean[][] visited) {
+    return Arrays.stream(currentNodes)
+        .flatMap(point -> Stream.of(
+            new Point(point.x + 1, point.y),
+            new Point(point.x - 1, point.y),
+            new Point(point.x, point.y + 1),
+            new Point(point.x, point.y - 1)
+        ))
+        .filter(point ->
+            point.x >= 0 && point.y >= 0 &&
+            point.x < image.length && point.y < image[0].length &&
+            !visited[point.x][point.y])
+        .distinct()
+        .toArray(Point[]::new);
+  }
+
+  private static class Point {
+    public final int x, y;
+
+    public Point(int x, int y) {
+      this.x = x;
+      this.y = y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      return o instanceof Point && ((Point) o).x == x && ((Point) o).y == y;
+    }
   }
 
   public static class ColorGridTest {
