@@ -1,4 +1,4 @@
-package googleinterview.debounce;
+package googleinterview.throttle;
 
 public interface Clock {
   int getTime();

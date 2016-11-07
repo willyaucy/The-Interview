@@ -1,4 +1,4 @@
-package googleinterview.debounce;
+package googleinterview.throttle;
 
 import org.junit.Test;
 import java.util.HashMap;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.when;
  * A data point consists of a url and a payload.
  *
  * However, to make sure our server does not get overloaded, we would like
- * to debounce the calls.
+ * to throttle the calls.
  *
  * Concretely, after we processed a data point from a url,
  * we do not want to process any subseqent data points with the same url
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
  * Finished: Oct 23 5:57PM (test cases done, verified)
  *
  */
-public class DebouncedProcessor implements Processor {
+public class ThrottledProcessor implements Processor {
   private final Processor processor;
   private final Clock clock;
   private final long timeout;
@@ -42,7 +42,7 @@ public class DebouncedProcessor implements Processor {
   private HashMap<String, Integer> lastProcessed = new HashMap<>();
   private LinkedList<String> urlsOnCooldown = new LinkedList<>();
 
-  public DebouncedProcessor(Processor processor, Clock clock, long timeout) {
+  public ThrottledProcessor(Processor processor, Clock clock, long timeout) {
     this.processor = processor;
     this.clock = clock;
     this.timeout = timeout;
@@ -70,22 +70,22 @@ public class DebouncedProcessor implements Processor {
     }
   }
 
-  public static class DebouncedProcessorTest {
+  public static class ThrottledProcessorTest {
     @Test
     public void test1() {
       Processor processor = mock(Processor.class);
       Clock clock = mock(Clock.class);
 
-      DebouncedProcessor debouncedProcessor = new DebouncedProcessor(
+      ThrottledProcessor throttledProcessor = new ThrottledProcessor(
           processor,
           clock,
           2);
 
       when(clock.getTime()).thenReturn(1);
 
-      debouncedProcessor.process("abc", "some data");
-      debouncedProcessor.process("abc", "some moar data");
-      debouncedProcessor.process("abc", "lolz");
+      throttledProcessor.process("abc", "some data");
+      throttledProcessor.process("abc", "some moar data");
+      throttledProcessor.process("abc", "lolz");
 
       verify(processor).process(eq("abc"), anyString());
       verify(processor).process("abc", "some data");
@@ -96,19 +96,19 @@ public class DebouncedProcessor implements Processor {
       Processor processor = mock(Processor.class);
       Clock clock = mock(Clock.class);
 
-      DebouncedProcessor debouncedProcessor = new DebouncedProcessor(
+      ThrottledProcessor throttledProcessor = new ThrottledProcessor(
           processor,
           clock,
           2);
 
       when(clock.getTime()).thenReturn(1);
 
-      debouncedProcessor.process("abc", "some data");
-      debouncedProcessor.process("abc", "some moar data");
+      throttledProcessor.process("abc", "some data");
+      throttledProcessor.process("abc", "some moar data");
 
       when(clock.getTime()).thenReturn(4);
 
-      debouncedProcessor.process("abc", "lolz");
+      throttledProcessor.process("abc", "lolz");
 
       verify(processor, times(2)).process(eq("abc"), anyString());
       verify(processor).process("abc", "some data");
