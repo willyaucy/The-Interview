@@ -2,6 +2,10 @@ package googleinterview.throttle;
 
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -27,21 +31,55 @@ import static org.mockito.Mockito.when;
  * process? -  | y | n | y | y | n | y |
  *
  * Started: Nov 6 5:26PM
+ * Finished: Nov 6 5:51PM
  *
+ * Approach:
+ * Keep a map of throttled urls.
+ * If the incoming url is not in the map,
+ * add url to map along with timestamp and process immediately,
+ * clean up timed out items from the map.
+ *
+ * To clean up, also store urls in a queue, so that we can trivially loop through all timed out urls
+ * during clean up.
  */
 public class ThrottledProcessorTakeThree implements Processor {
   private final Processor processor;
   private final Clock clock;
   private final int timeout;
+
+  private final Map<String, Integer> throttledUrls;
+  private final LinkedList<String> throttledUrlQueue;
   
   public ThrottledProcessorTakeThree(Processor processor, Clock clock, int timeout) {
     this.processor = processor;
     this.clock = clock;
     this.timeout = timeout;
+    this.throttledUrls = new HashMap<>();
+    this.throttledUrlQueue = new LinkedList<>();
   }
 
   @Override
   public void process(String url, String payload) {
+    cleanUpTimedOutUrls();
+
+    if (!throttledUrls.containsKey(url)) {
+      throttledUrls.put(url, clock.getTime());
+      throttledUrlQueue.add(url);
+
+      processor.process(url, payload);
+
+      // We can also queue up an async task to clean up queue after timeout has passed to make sure
+      // the item is cleaned up in a timely manner.
+
+      // Alternatively, we can also set up a job to clean up the queue periodically.
+    }
+  }
+
+  private void cleanUpTimedOutUrls() {
+    while (!throttledUrlQueue.isEmpty()
+        && clock.getTime() >= throttledUrls.get(throttledUrlQueue.peek()) + timeout) {
+      throttledUrls.remove(throttledUrlQueue.remove());
+    }
   }
 
   public static class ThrottledProcessorTest {
