@@ -1,10 +1,12 @@
-package googleinterview.throttle;
+package googleinterview;
 
 import java.util.Optional;
 
 /**
  * Given a list of rectangles,
  * see if you can form a big rectangle with all of them with no overlap or empty space.
+ *
+ *
  */
 public class RectangleMerge {
   public static class Rectangle {

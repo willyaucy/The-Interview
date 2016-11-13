@@ -38,6 +38,28 @@ public class RepeatStringEasy {
     return dp[s.length() - 2][s.length() - 1][1];
   }
 
+  public static String lcs(String x, String y) {
+    if (x.length() < 1 || y.length() < 1) {
+      return "";
+    }
+
+    if (x.charAt(0) == y.charAt(0)) {
+      return x.charAt(0) + lcs(x.substring(1), y.substring(1));
+    } else {
+      return max(
+          lcs(x.substring(1), y),
+          lcs(x, y.substring(1)));
+    }
+  }
+
+  public static String max(String a, String b) {
+    return a.length() > b.length() ? a : b;
+  }
+
+  private static class LCSMemoized {
+
+  }
+
   public static class RepeatStringEasyTest {
     @Test
     public void test0() {
