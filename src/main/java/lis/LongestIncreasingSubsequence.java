@@ -6,9 +6,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -16,25 +15,24 @@ import static org.junit.Assert.assertEquals;
  */
 public class LongestIncreasingSubsequence {
   public static List<Integer> lis(List<Integer> list) {
-    List<List<Integer>> dp = list.stream().reduce(
-        new ArrayList<List<Integer>>(),
-        (increasingSubseqs, i) -> {
-          List<Integer> lisBefore = increasingSubseqs.stream()
-              .filter(subseq -> subseq.get(subseq.size() - 1) <= i.intValue())
-              .reduce((subseq1, subseq2) -> subseq1.size() > subseq2.size() ? subseq1 : subseq2)
-              .orElse(Collections.emptyList());
+    List<List<Integer>> subsequences = new ArrayList<>(list.size());
 
-          List<Integer> output = new ArrayList<>();
-          output.addAll(lisBefore);
-          output.add(i);
+    for (int i : list) {
+      List<Integer> lisWithoutI = subsequences.stream()
+          .filter(subseq -> subseq.get(subseq.size() - 1) <= i)
+          .reduce((subseq1, subseq2) -> subseq1.size() >= subseq2.size() ? subseq1 : subseq2)
+          .orElse(Collections.emptyList());
 
-          increasingSubseqs.add(output);
+      List<Integer> lisWithI = new ArrayList<>(lisWithoutI.size() + 1);
+      lisWithI.addAll(lisWithoutI);
+      lisWithI.add(i);
 
-          return increasingSubseqs;
-        },
-        (list1, list2) -> { throw new IllegalStateException(); });
+      subsequences.add(lisWithI);
+    }
 
-    return dp.stream().reduce((l1, l2) -> l1.size() > l2.size() ? l1 : l2).orElse(Collections.emptyList());
+    return subsequences.stream()
+        .reduce((subseq1, subseq2) -> subseq1.size() >= subseq2.size() ? subseq1 : subseq2)
+        .orElse(Collections.emptyList());
   }
 
   public static class LongestIncreasingSubsequenceTest {
@@ -56,6 +54,18 @@ public class LongestIncreasingSubsequence {
     @Test
     public void test3() {
       assertEquals(1, lis(Arrays.asList(5, 4, 3, 2, 1, 0)).size());
+    }
+
+    @Test
+    public void test4() {
+      assertEquals(6, lis(Arrays.asList(15, 27, 14, 38, 26, 55, 46, 65, 85)).size());
+    }
+
+    @Test
+    public void test5() {
+      assertArrayEquals(
+          new int[] {15, 27, 38, 55, 65, 85},
+          lis(Arrays.asList(15, 27, 14, 38, 26, 55, 46, 65, 85)).stream().mapToInt(i -> i).toArray());
     }
   }
 }

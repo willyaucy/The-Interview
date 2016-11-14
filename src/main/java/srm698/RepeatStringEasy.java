@@ -30,13 +30,9 @@ public class RepeatStringEasy {
     Map<UnorderedPair<String>, String> cache = new HashMap<>();
 
     public String find(String s1, String s2) {
-      if (cache.containsKey(new UnorderedPair<>(s1, s2))) {
-        return cache.get(new UnorderedPair<>(s1, s2));
-      } else {
-        String output = findExpensive(s1, s2);
-        cache.put(new UnorderedPair<>(s1, s2), output);
-        return output;
-      }
+      return cache.computeIfAbsent(
+          new UnorderedPair<>(s1, s2),
+          pair -> findExpensive(pair.left, pair.right));
     }
 
     private String findExpensive(String s1, String s2) {
