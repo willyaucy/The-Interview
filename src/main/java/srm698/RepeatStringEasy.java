@@ -2,6 +2,11 @@ package srm698;
 
 import org.junit.Test;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.IntStream;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -13,51 +18,66 @@ public class RepeatStringEasy {
       return 0;
     }
 
-    // subproblem   : what is the best subsequence ending at ij
-    // 1st dimension: i
-    // 2nd dimension: j
-    // 3rd dimension: (best subsequence ending at ij; best subsequence ending at xy, where x <= i and y <= j)
-    int[][][] dp = new int[s.length()][s.length()][2];
+    LCSFinder lcsFinder = new LCSFinder();
 
-    for (int j = 1; j < s.length(); j++) {
-      dp[0][j][0] = s.charAt(0) == s.charAt(j) ? 2 : 0;
-      dp[0][j][1] = Math.max(dp[0][j - 1][1], dp[0][j][0]);
-    }
+    return IntStream.rangeClosed(1, s.length())
+        .map(i -> 2 * lcsFinder.find(s.substring(0, i), s.substring(i)).length())
+        .max()
+        .getAsInt();
+  }
 
-    for (int j = 2; j < s.length(); j++) {
-      for (int i = 1; i < j; i++) {
-        dp[i][j][1] = Math.max(dp[i - 1][j][1], dp[i][j - 1][1]);
+  public static class LCSFinder {
+    Map<UnorderedPair<String>, String> cache = new HashMap<>();
 
-        if (s.charAt(i) == s.charAt(j)) {
-          dp[i][j][0] = dp[i - 1][j - 1][1] + 2;
-          dp[i][j][1] = Math.max(dp[i][j][1], dp[i][j][0]);
-        }
+    public String find(String s1, String s2) {
+      if (cache.containsKey(new UnorderedPair<>(s1, s2))) {
+        return cache.get(new UnorderedPair<>(s1, s2));
+      } else {
+        String output = findExpensive(s1, s2);
+        cache.put(new UnorderedPair<>(s1, s2), output);
+        return output;
       }
     }
 
-    return dp[s.length() - 2][s.length() - 1][1];
-  }
-
-  public static String lcs(String x, String y) {
-    if (x.length() < 1 || y.length() < 1) {
-      return "";
-    }
-
-    if (x.charAt(0) == y.charAt(0)) {
-      return x.charAt(0) + lcs(x.substring(1), y.substring(1));
-    } else {
-      return max(
-          lcs(x.substring(1), y),
-          lcs(x, y.substring(1)));
+    private String findExpensive(String s1, String s2) {
+      if (s1.length() < 1 || s2.length() < 1) {
+        return "";
+      } else if (s1.charAt(0) == s2.charAt(0)) {
+        return s1.charAt(0) + find(s1.substring(1), s2.substring(1));
+      } else {
+        return max(find(s1.substring(1), s2), find(s1, s2.substring(1)));
+      }
     }
   }
 
-  public static String max(String a, String b) {
-    return a.length() > b.length() ? a : b;
+  private static String max(String s1, String s2) {
+    return s1.length() > s2.length() ? s1 : s2;
   }
 
-  private static class LCSMemoized {
+  public static class UnorderedPair<T extends Comparable<T>> {
+    public final T left, right;
 
+    public UnorderedPair(T a, T b) {
+      if (a.compareTo(b) > 0) {
+        left = a;
+        right = b;
+      } else {
+        right = a;
+        left = b;
+      }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      return o instanceof UnorderedPair
+          && ((UnorderedPair) o).left.equals(left)
+          && ((UnorderedPair) o).right.equals(right);
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(left, right);
+    }
   }
 
   public static class RepeatStringEasyTest {
@@ -84,6 +104,33 @@ public class RepeatStringEasy {
     @Test
     public void test4() {
       assertEquals(0, maximalLength("x"));
+    }
+
+    @Test
+    public void test5() {
+      assertEquals(20, maximalLength("ananannnannandadnadndfsddddssdsdddnsndtttnennddnf"));
+    }
+  }
+
+  public static class LcsTest {
+    @Test
+    public void test0() {
+      assertEquals("abc", new LCSFinder().find("abc", "abc"));
+    }
+
+    @Test
+    public void test1() {
+      assertEquals("abc", new LCSFinder().find("123abcdef", "xyabcz"));
+    }
+
+    @Test
+    public void test2() {
+      assertEquals("abc", new LCSFinder().find("xyza1bb2c3", "abc"));
+    }
+
+    @Test
+    public void test3() {
+      assertEquals("abc", new LCSFinder().find("xyza1bb2c3", "daebfcg"));
     }
   }
 }
