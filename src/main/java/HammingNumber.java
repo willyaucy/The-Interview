@@ -2,60 +2,67 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by yauyin on 11/12/16.
- * Started: 3:19PM
- */
 public class HammingNumber {
-  public static LazyStream<Integer> generateHammingNumberStream() {
-    return new LazyStream<>(
+  public static LazyIntStream generateHammingNumberStream() {
+    return new LazyIntStream(
         1,
-        () -> HammingNumber.<Integer>mergeOrderedStream(
-            generateHammingNumberStream().map(n -> n * 2),
-            generateHammingNumberStream().map(n -> n * 3),
-            generateHammingNumberStream().map(n -> n * 5)));
+        () -> HammingNumber.mergeOrderedStream(
+            generateHammingNumberStream().multiply(2),
+            generateHammingNumberStream().multiply(3),
+            generateHammingNumberStream().multiply(5)),
+        1);
   }
 
-  public static <T extends Comparable<T>> LazyStream<T> mergeOrderedStream(
-      LazyStream<T> stream1, LazyStream<T> stream2, LazyStream<T> stream3) {
+  public static LazyIntStream mergeOrderedStream(
+      LazyIntStream stream1, LazyIntStream stream2, LazyIntStream stream3) {
 
-    List<LazyStream<T>> streams = Arrays.asList(stream1, stream2, stream3);
-    streams.sort((s1, s2) -> s1.head.compareTo(s2.head));
+    List<LazyIntStream> streams = Arrays.asList(stream1, stream2, stream3);
+    streams.sort((s1, s2) -> s1.head - s2.head);
 
-    if (streams.get(1).head.equals(streams.get(0).head)) {
-      streams.set(1, streams.get(1).rest.get());
+    if (streams.get(1).head == streams.get(0).head) {
+      streams.set(1, streams.get(1).getRest());
     }
 
-    if (streams.get(2).head.equals(streams.get(0).head)) {
-      streams.set(2, streams.get(2).rest.get());
+    if (streams.get(2).head == streams.get(0).head) {
+      streams.set(2, streams.get(2).getRest());
     }
 
-    return new LazyStream<>(
+    return new LazyIntStream(
         streams.get(0).head,
         () -> mergeOrderedStream(
-            streams.get(0).rest.get(),
+            streams.get(0).getRest(),
             streams.get(1),
-            streams.get(2)));
+            streams.get(2)),
+        1);
   }
 
-  public static class LazyStream<T> {
-    public final T head;
-    public final Supplier<LazyStream<T>> rest;
+  public static class LazyIntStream {
+    private final int head;
+    private final Supplier<LazyIntStream> rest;
+    private final int restMultiplier;
 
-    public LazyStream(T head, Supplier<LazyStream<T>> rest) {
+    public LazyIntStream(int head, Supplier<LazyIntStream> rest, int restMultiplier) {
       this.head = head;
       this.rest = rest;
+      this.restMultiplier = restMultiplier;
     }
 
-    public <U> LazyStream<U> map(Function<T, U> fn) {
-      return new LazyStream<>(fn.apply(head), () -> rest.get().map(fn));
+    public int getHead() {
+      return head;
+    }
+
+    public LazyIntStream getRest() {
+      return rest.get().multiply(restMultiplier);
+    }
+    
+    public LazyIntStream multiply(int multiplier) {
+      return new LazyIntStream(head * multiplier, rest, restMultiplier * multiplier);
     }
   }
 
