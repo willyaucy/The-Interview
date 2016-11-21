@@ -1,56 +1,63 @@
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import org.junit.Test;
+
 import java.util.function.Supplier;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 public class HammingNumber {
+  private static final LazyIntStream HAMMING_STREAM = new LazyIntStream(
+      1,
+      () -> HammingNumber.mergeOrderedStream(
+          generateHammingNumberStream().multiply(2),
+          generateHammingNumberStream().multiply(3),
+          generateHammingNumberStream().multiply(5)),
+      1);
+
   public static LazyIntStream generateHammingNumberStream() {
-    return new LazyIntStream(
-        1,
-        () -> HammingNumber.mergeOrderedStream(
-            generateHammingNumberStream().multiply(2),
-            generateHammingNumberStream().multiply(3),
-            generateHammingNumberStream().multiply(5)),
-        1);
+    return HAMMING_STREAM;
   }
 
   public static LazyIntStream mergeOrderedStream(
       LazyIntStream stream1, LazyIntStream stream2, LazyIntStream stream3) {
 
-    List<LazyIntStream> streams = Arrays.asList(stream1, stream2, stream3);
-    streams.sort((s1, s2) -> s1.head - s2.head);
+    return mergeOrderedStream(stream1, mergeOrderedStream(stream2, stream3));
+  }
 
-    if (streams.get(1).head == streams.get(0).head) {
-      streams.set(1, streams.get(1).getRest());
+  public static LazyIntStream mergeOrderedStream(LazyIntStream stream1, LazyIntStream stream2) {
+    if (stream1.head < stream2.head) {
+      return new LazyIntStream(
+          stream1.head,
+          () -> mergeOrderedStream(stream1.getRest(), stream2),
+          1);
+    } else if (stream1.head > stream2.head) {
+      return new LazyIntStream(
+          stream2.head,
+          () -> mergeOrderedStream(stream2.getRest(), stream1),
+          1);
+    } else {
+      return new LazyIntStream(
+          stream1.head,
+          () -> mergeOrderedStream(stream1.getRest(), stream2.getRest()),
+          1);
     }
-
-    if (streams.get(2).head == streams.get(0).head) {
-      streams.set(2, streams.get(2).getRest());
-    }
-
-    return new LazyIntStream(
-        streams.get(0).head,
-        () -> mergeOrderedStream(
-            streams.get(0).getRest(),
-            streams.get(1),
-            streams.get(2)),
-        1);
   }
 
   public static class LazyIntStream {
     private final int head;
     private final Supplier<LazyIntStream> rest;
     private final int restMultiplier;
+    private LazyIntStream computedRest;
 
     public LazyIntStream(int head, Supplier<LazyIntStream> rest, int restMultiplier) {
       this.head = head;
       this.rest = rest;
       this.restMultiplier = restMultiplier;
+      computedRest = null;
     }
 
     public int getHead() {
@@ -58,7 +65,11 @@ public class HammingNumber {
     }
 
     public LazyIntStream getRest() {
-      return rest.get().multiply(restMultiplier);
+      if (computedRest == null) {
+        computedRest = rest.get().multiply(restMultiplier);
+      }
+
+      return computedRest;
     }
     
     public LazyIntStream multiply(int multiplier) {
