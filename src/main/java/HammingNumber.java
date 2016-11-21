@@ -12,13 +12,15 @@ import static org.junit.Assert.assertEquals;
  * Started: 3:19PM
  */
 public class HammingNumber {
+  private static final LazyStream<Integer> HAMMING_NUMBER_STREAM = new LazyStream<>(
+      1,
+      () -> HammingNumber.<Integer>mergeOrderedStream(
+          generateHammingNumberStream().map(n -> n * 2),
+          generateHammingNumberStream().map(n -> n * 3),
+          generateHammingNumberStream().map(n -> n * 5)));
+
   public static LazyStream<Integer> generateHammingNumberStream() {
-    return new LazyStream<>(
-        1,
-        () -> HammingNumber.<Integer>mergeOrderedStream(
-            generateHammingNumberStream().map(n -> n * 2),
-            generateHammingNumberStream().map(n -> n * 3),
-            generateHammingNumberStream().map(n -> n * 5)));
+    return HAMMING_NUMBER_STREAM;
   }
 
   public static <T extends Comparable<T>> LazyStream<T> mergeOrderedStream(
@@ -48,6 +50,7 @@ public class HammingNumber {
   public static class LazyStream<T> {
     public final T head;
     public final Supplier<LazyStream<T>> rest;
+    public LazyStream<T> computedRest;
 
     public LazyStream(T head, Supplier<LazyStream<T>> rest) {
       this.head = head;
@@ -59,7 +62,11 @@ public class HammingNumber {
     }
     
     public LazyStream<T> getRest() {
-      return rest.get();
+      if (computedRest == null) {
+        computedRest = rest.get();
+      }
+
+      return computedRest;
     }
 
     public <U> LazyStream<U> map(Function<T, U> fn) {
