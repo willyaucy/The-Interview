@@ -1,6 +1,9 @@
-import java.io.Reader;
+import org.junit.Test;
+
 import java.util.Scanner;
 import java.util.stream.Stream;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * https://www.hackerrank.com/challenges/equal
@@ -16,6 +19,17 @@ public class Equal {
       scanner.nextInt(); // number of coworkers. ignored
       int[] numChocolates = Stream.of(scanner.next().split(" "))
           .mapToInt(Integer::parseInt).toArray();
+    }
+  }
+
+  public static int minOperations(int[] numChocolates) {
+    return -1;
+  }
+
+  public static class EqualTest {
+    @Test
+    public void test0() {
+      assertEquals(2, minOperations(new int[] { 2, 2, 3, 7 }));
     }
   }
 }
