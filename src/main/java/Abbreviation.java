@@ -81,7 +81,7 @@ public class Abbreviation {
         if (a.length() == b.length()) {
           return a.toUpperCase().equals(b);
         } else if (b.length() == 0) {
-          return true;
+          return a.equals(a.toLowerCase());
         } else if (a.length() < b.length()) {
           return false;
         }
@@ -130,6 +130,56 @@ public class Abbreviation {
     @Test
     public void test3() {
       assertFalse(canAbbr("daBBcd", "ABC"));
+    }
+
+    @Test
+    public void test4() {
+      assertTrue(canAbbr("Pi", "P"));
+    }
+
+    @Test
+    public void test5() {
+      assertFalse(canAbbr("AfPZN", "APZNC"));
+    }
+
+    @Test
+    public void test6() {
+      assertFalse(canAbbr("LDJAN", "LJJM"));
+    }
+
+    @Test
+    public void test7() {
+      assertTrue(canAbbr("UMKFW", "UMKFW"));
+    }
+
+    @Test
+    public void test8() {
+      assertFalse(canAbbr("KXzQ", "K"));
+    }
+
+    @Test
+    public void test9() {
+      assertTrue(canAbbr("LIT", "LIT"));
+    }
+
+    @Test
+    public void test10() {
+      assertTrue(canAbbr("QYCH", "QYCH"));
+    }
+
+    @Test
+    public void test11() {
+      assertTrue(canAbbr("DFIQG", "DFIQG"));
+    }
+
+    @Test
+    public void test12() {
+      assertFalse(canAbbr("sYOCa", "YOCN"));
+    }
+
+    @Test
+    public void test13() {
+      assertFalse(canAbbr("JHMWY", "HUVPW"));
     }
   }
 }
