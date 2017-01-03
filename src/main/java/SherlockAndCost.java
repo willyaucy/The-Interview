@@ -1,8 +1,5 @@
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Scanner;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -27,62 +24,27 @@ public class SherlockAndCost {
   }
 
   public static long computeMaxS(int[] b) {
-    return new MaxSFinder(b).computeMaxS();
-  }
-
-  private static final class IntPair {
-    private final int left, right;
-
-    public IntPair(int left, int right) {
-      this.left = left;
-      this.right = right;
+    if (b.length < 2) {
+      return 0;
     }
 
-    @Override
-    public boolean equals(Object o) {
-      return o instanceof IntPair
-          && ((IntPair) o).left == this.left
-          && ((IntPair) o).right == this.right;
+    long maxSEndsWith1 = Math.abs(b[0] - 1);
+    long maxSEndsWithBi = Math.max(Math.abs(1 - b[1]), Math.abs(b[0] - b[1]));
+
+    for (int i = 2; i < b.length; i++) {
+      long newMaxSEndsWith1 = Math.max(
+          maxSEndsWith1,
+          maxSEndsWithBi + Math.abs(b[i - 1] - 1));
+
+      long newMaxSEndsWithBi = Math.max(
+          maxSEndsWith1 + Math.abs(1 - b[i]),
+          maxSEndsWithBi + Math.abs(b[i - 1] - b[i]));
+
+      maxSEndsWith1 = newMaxSEndsWith1;
+      maxSEndsWithBi = newMaxSEndsWithBi;
     }
 
-    @Override
-    public int hashCode() {
-      return Objects.hash(left, right);
-    }
-  }
-
-  private static final class MaxSFinder {
-    private int[] b;
-    private Map<IntPair, Long> memo;
-
-    public MaxSFinder(int[] b) {
-      this.b = b;
-      this.memo = new HashMap<>();
-    }
-
-    public long computeMaxS() {
-      if (b.length == 0) {
-        return 0;
-      }
-
-      return Math.max(
-          computeMaxS(0, 1),
-          computeMaxS(0, b[0]));
-    }
-
-    public long computeMaxS(int startIdx, int aStart) {
-      if (b.length - startIdx < 2) {
-        return 0;
-      } else if (b.length - startIdx == 2) {
-        return Math.abs(b[startIdx + 1] - aStart);
-      }
-
-      return memo.computeIfAbsent(
-          new IntPair(startIdx, aStart),
-          ignoredPair -> Math.max(
-              Math.abs(aStart - 1) + computeMaxS(startIdx + 1, 1),
-              Math.abs(aStart - b[startIdx + 1]) + computeMaxS(startIdx + 1, b[startIdx + 1])));
-    }
+    return Math.max(maxSEndsWith1, maxSEndsWithBi);
   }
 
   public static class SherlockAndCostTest {
