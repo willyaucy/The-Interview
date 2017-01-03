@@ -1,9 +1,9 @@
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -23,48 +23,83 @@ public class SherlockAndCost {
       return IntStream.generate(scanner::nextInt).limit(numElements).toArray();
     }).limit(numTestCases).toArray(int[][]::new);
 
-    Stream.of(inputs).map(SherlockAndCost::maxS).forEach(System.out::println);
+    Stream.of(inputs).map(SherlockAndCost::computeMaxS).forEach(System.out::println);
   }
 
-  public static int maxS(int[] b) {
-    return maxS(IntStream.of(b).boxed().collect(Collectors.toList()));
+  public static long computeMaxS(int[] b) {
+    return new MaxSFinder(b).computeMaxS();
   }
 
-  public static int maxS(List<Integer> b) {
-    if (b.size() < 2) {
-      return 0;
+  private static final class IntPair {
+    private final int left, right;
+
+    public IntPair(int left, int right) {
+      this.left = left;
+      this.right = right;
     }
 
-    return Math.max(
-        maxS(1, b.subList(1, b.size())),
-        maxS(b.get(0), b.subList(1, b.size())));
-  }
-
-  public static int maxS(int leftPrefix, List<Integer> b) {
-    if (b.size() < 1) {
-      return 0;
-    } else if (b.size() == 1) {
-      return Math.abs(b.get(0) - leftPrefix);
+    @Override
+    public boolean equals(Object o) {
+      return o instanceof IntPair
+          && ((IntPair) o).left == this.left
+          && ((IntPair) o).right == this.right;
     }
 
-    return Math.max(
-        Math.abs(leftPrefix - 1) + maxS(1, b.subList(1, b.size())),
-        Math.abs(leftPrefix - b.get(0)) + maxS(b.get(0), b.subList(1, b.size())));
+    @Override
+    public int hashCode() {
+      return Objects.hash(left, right);
+    }
   }
 
-  private static int calculateS(int[] a) {
-    return IntStream.range(1, a.length).map(i -> Math.abs(a[i] - a[i - 1])).sum();
+  private static final class MaxSFinder {
+    private int[] b;
+    private Map<IntPair, Long> memo;
+
+    public MaxSFinder(int[] b) {
+      this.b = b;
+      this.memo = new HashMap<>();
+    }
+
+    public long computeMaxS() {
+      if (b.length == 0) {
+        return 0;
+      }
+
+      return Math.max(
+          computeMaxS(0, 1),
+          computeMaxS(0, b[0]));
+    }
+
+    public long computeMaxS(int startIdx, int aStart) {
+      if (b.length - startIdx < 2) {
+        return 0;
+      } else if (b.length - startIdx == 2) {
+        return Math.abs(b[startIdx + 1] - aStart);
+      }
+
+      return memo.computeIfAbsent(
+          new IntPair(startIdx, aStart),
+          ignoredPair -> Math.max(
+              Math.abs(aStart - 1) + computeMaxS(startIdx + 1, 1),
+              Math.abs(aStart - b[startIdx + 1]) + computeMaxS(startIdx + 1, b[startIdx + 1])));
+    }
   }
 
   public static class SherlockAndCostTest {
     @Test
     public void test0() {
-      assertEquals(36, maxS(new int[] {10, 1, 10, 1, 10}));
+      assertEquals(36, computeMaxS(new int[] {10, 1, 10, 1, 10}));
     }
 
     @Test
     public void test1() {
-      assertEquals(36, maxS(new int[] {10, 10, 10, 10, 10}));
+      assertEquals(36, computeMaxS(new int[] {10, 10, 10, 10, 10}));
+    }
+
+    @Test
+    public void test2() {
+      assertEquals(6442450938L, computeMaxS(
+          new int[] {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE}));
     }
   }
 }
