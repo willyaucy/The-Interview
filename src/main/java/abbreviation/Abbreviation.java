@@ -1,3 +1,5 @@
+package abbreviation;
+
 import org.junit.Test;
 
 import java.util.HashMap;
