@@ -1,22 +1,25 @@
 import org.junit.Test;
 
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
 /**
  * Created by yau on 12/4/16.
  */
-public class HugeInteger {
+public class HugeInteger implements Comparable<HugeInteger> {
   private final String val;
 
-  public HugeInteger(String val) {
+  private HugeInteger(String val) {
     this.val = val;
   }
 
-  public HugeInteger(int val) {
-    this.val = String.valueOf(val);
+  public static HugeInteger of(String val) {
+    return new HugeInteger(new StringBuilder(val).reverse().toString());
+  }
+
+  public static HugeInteger of(int val) {
+    return of(String.valueOf(val));
   }
 
   public HugeInteger add(HugeInteger anotherNum) {
@@ -39,11 +42,15 @@ public class HugeInteger {
 
   public HugeInteger multiply(HugeInteger anotherNum) {
     return IntStream.range(0, anotherNum.length())
-        .mapToObj(i -> multiplyDigit(anotherNum.getDigit(i)).prependZeros(i))
+        .mapToObj(i -> multiplyDigit(anotherNum.getDigit(i)).appendZeros(i))
         .reduce(HugeInteger::add).get();
   }
 
   private HugeInteger multiplyDigit(int digit) {
+    if (digit == 0) {
+      return new HugeInteger("0");
+    }
+
     StringBuilder newVal = new StringBuilder();
     int carry = 0;
 
@@ -61,8 +68,8 @@ public class HugeInteger {
     return new HugeInteger(newVal.toString());
   }
 
-  private HugeInteger prependZeros(int numZeros) {
-    if (numZeros == 0) {
+  private HugeInteger appendZeros(int numZeros) {
+    if (val.equals("0") || numZeros == 0) {
       return this;
     }
 
@@ -86,12 +93,12 @@ public class HugeInteger {
   }
 
   public int toInt() {
-    return Integer.parseInt(val);
+    return Integer.parseInt(new StringBuilder(val).reverse().toString());
   }
 
   @Override
   public String toString() {
-    return val;
+    return String.format("%s", new StringBuilder(val).reverse().toString());
   }
 
   @Override
@@ -104,35 +111,54 @@ public class HugeInteger {
     return val.hashCode();
   }
 
+  @Override
+  public int compareTo(HugeInteger other) {
+    if (length() > other.length()) {
+      return 1;
+    } else if (length() < other.length()) {
+      return -1;
+    } else {
+      for (int i = 0; i < length(); i++) {
+        if (getDigit(i) > other.getDigit(i)) {
+          return 1;
+        } else if (getDigit(i) < other.getDigit(i)) {
+          return -1;
+        }
+      }
+
+      return 0;
+    }
+  }
+
   public static class HugeIntegerTest {
     @Test
     public void test0() {
-      assertEquals(5, new HugeInteger(2).add(new HugeInteger(3)).toInt());
+      assertEquals(5, HugeInteger.of(2).add(HugeInteger.of(3)).toInt());
     }
 
     @Test
     public void test1() {
-      assertEquals(6, new HugeInteger(2).multiply(new HugeInteger(3)).toInt());
+      assertEquals(6, HugeInteger.of(2).multiply(HugeInteger.of(3)).toInt());
     }
 
     @Test
     public void test2() {
-      assertEquals(0, new HugeInteger(99).multiply(new HugeInteger(0)).toInt());
+      assertEquals(0, HugeInteger.of(99).multiply(HugeInteger.of(0)).toInt());
     }
 
     @Test
     public void test3() {
-      assertEquals(144, new HugeInteger(12).multiply(new HugeInteger(12)).toInt());
+      assertEquals(144, HugeInteger.of(12).multiply(HugeInteger.of(12)).toInt());
     }
 
     @Test
     public void test4() {
-      assertEquals(5535, new HugeInteger(123).multiply(new HugeInteger(45)).toInt());
+      assertEquals(5535, HugeInteger.of(123).multiply(HugeInteger.of(45)).toInt());
     }
 
     @Test
     public void test5() {
-      assertEquals(5535, new HugeInteger(45).multiply(new HugeInteger(123)).toInt());
+      assertEquals(5535, HugeInteger.of(45).multiply(HugeInteger.of(123)).toInt());
     }
   }
 }
